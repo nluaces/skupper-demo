@@ -75,20 +75,18 @@ spec:
         type: "#class:org.apache.commons.dbcp2.BasicDataSource"
         property:
           - key: username
-            value: '{{username}}'
+            value: 'postgresadmin'
           - key: password
-            value: '{{password}}'
+            value: 'admin123'
           - key: url
-            value: 'jdbc:postgresql://{{serverName}}:{{serverPort}}/{{databaseName}}'
+            value: 'jdbc:postgresql://postgres:5432/postgresdb'
           - key: driverClassName
             value: 'org.postgresql.Driver'
     from:
       uri: "kamelet:source"
       steps:
-        - unmarshal:
-            json:
-              library: Jackson
+        - log: "${body}"
         - to:
-            uri: "sql:{{query}}"
+            uri: "sql:INSERT INTO tw_feedback(sigthning) VALUES (:#${body})"
             parameters:
               dataSource: "#bean:{{dsBean}}"
