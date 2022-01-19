@@ -77,6 +77,6 @@ Create a secret in the cluster with database credentials:
 
 Run the camel integration
 ```
- $ kamel run SelectPostgres.java --dev --build-property quarkus.datasource.camel.db-kind=postgresql  --config secret:tw-datasource -d mvn:io.quarkus:quarkus-jdbc-postgresql
+ kamel run SelectPostgres.java --dev --build-property quarkus.datasource.camel.db-kind=postgresql  --config secret:tw-datasource -d mvn:io.quarkus:quarkus-jdbc-postgresql -d mvn:org.apache.camel:camel-jackson
 ```
 
