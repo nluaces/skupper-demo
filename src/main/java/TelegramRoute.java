@@ -3,13 +3,14 @@ import org.apache.camel.component.jackson.JacksonDataFormat;
 import org.apache.camel.model.dataformat.JsonLibrary;
 
 public class TelegramRoute extends RouteBuilder {
-    private final String AUTHORIZATION_TOKEN =  "YourAuthorizationToken";
-    private final String CHAT_ID = "YourChatID";
 
     JacksonDataFormat jsonDataFormat = new JacksonDataFormat(Tweet.class);
 
     @Override
     public void configure() throws Exception {
+        final String AUTHORIZATION_TOKEN =  getContext().getPropertiesComponent().resolveProperty("AUTHORIZATION_TOKEN").get();
+        final String CHAT_ID = getContext().getPropertiesComponent().resolveProperty("CHAT_ID").get();
+
         from("timer://foo?period=3000")
                 .setBody(constant("SELECT sigthning FROM tw_feedback WHERE  created >= NOW() - INTERVAL '3 seconds'"))
                 .to("jdbc:camel")

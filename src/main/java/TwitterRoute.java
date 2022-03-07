@@ -6,10 +6,7 @@ import twitter4j.Status;
 
 
 public class TwitterRoute extends RouteBuilder {
-    private final String CONSUMER_KEY = "YourConsumerKey";
-    private final String CONSUMER_SECRET = "YourConsumerSecret";
-    private final String ACCESS_TOKEN = "YourAccessToken";
-    private final String ACCESS_TOKEN_SECRET = "YourAccessTokenSecret";
+
 
     private Processor routeProcessor = exchange -> {
         final Status status = (Status) exchange.getIn().getBody();
@@ -19,6 +16,11 @@ public class TwitterRoute extends RouteBuilder {
 
     @Override
     public void configure() throws Exception {
+
+        String CONSUMER_KEY = getContext().getPropertiesComponent().resolveProperty("CONSUMER_KEY").get();
+        String CONSUMER_SECRET = getContext().getPropertiesComponent().resolveProperty("CONSUMER_SECRET").get();
+        String ACCESS_TOKEN = getContext().getPropertiesComponent().resolveProperty("ACCESS_TOKEN").get();
+        String ACCESS_TOKEN_SECRET = getContext().getPropertiesComponent().resolveProperty("ACCESS_TOKEN_SECRET").get();
 
         // setup Twitter component
         TwitterSearchComponent tc = getContext().getComponent("twitter-search", TwitterSearchComponent.class);
