@@ -1,12 +1,10 @@
-package dev.nluaces.postgresql;
-
 import org.apache.camel.builder.RouteBuilder;
 import org.apache.camel.component.jackson.JacksonDataFormat;
 import org.apache.camel.model.dataformat.JsonLibrary;
 
-public class SelectPostgres extends RouteBuilder {
-    private final String AUTHORIZATION_TOKEN = "";
-    private final String CHAT_ID = "";
+public class TelegramRoute extends RouteBuilder {
+    private final String AUTHORIZATION_TOKEN =  "YourAuthorizationToken";
+    private final String CHAT_ID = "YourChatID";
 
     JacksonDataFormat jsonDataFormat = new JacksonDataFormat(Tweet.class);
 
@@ -25,10 +23,9 @@ public class SelectPostgres extends RouteBuilder {
                 .toF("telegram:bots/?authorizationToken=%s&chatId=%s", AUTHORIZATION_TOKEN, CHAT_ID )
                 .otherwise().log("No results").
                 endChoice();
-
     }
-
 }
+
 
 class Tweet {
     public String getSigthning() {

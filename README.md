@@ -5,11 +5,11 @@
   $ minikube addons enable registry
   $ kamel install
   ```
-- Twitter developer account
-- Telegram bot
-- Telegram chat id
+- A Twitter developer account
+- A Telegram bot
+- A Telegram chat id
 
-### Step 1. Set up kubernetes clusters and skupper
+### Step 1. Set up skupper in the clusters
 `TBD`
 
 ### Step 2. deploy a simple Postgres DB to private Kubernetes cluster
@@ -17,16 +17,14 @@
 This is a very simple example to show how to create a Postgres database. Note, this is not ready for any production purpose.
 Create a Kubernetes Deployment
 ```
-kubectl create -f postgres-configmap.yaml
-kubectl create -f postgres-storage.yaml
-kubectl create -f postgres-deployment.yaml
-kubectl create -f postgres-service.yaml
+kubectl create -f src/main/resources/database/postgres-svc.yaml
 ```
 Test the connection
 
-```
+```bash
 kubectl run pg-shell -i --tty --image quay.io/skupper/simple-pg --env="PGUSER=postgresadmin" --env="PGPASSWORD=admin123" --env="PGHOST=$(kubectl get service postgres -o=jsonpath='{.spec.clusterIP}')" -- bash
-
+```
+```bash
 psql --dbname=postgresdb
 ```
 
@@ -56,8 +54,10 @@ skupper expose deployment postgres --address postgres --port 5432 -n private1
 
 Install Camel integrations in the public1 cluster.
 ```
-    $ kubectl apply -f postgres-sink.kamelet.yaml
-    $ kamel run TwitterRoute.java
+    $ kamel install
+    $ minikube addons enable registry
+    $ kubectl apply -f src/main/resources/postgres-sink.kamelet.yaml
+    $ kamel run src/main/java/TwitterRoute.java
 ```
 To check the camel integration logs:
 ```
@@ -68,15 +68,15 @@ To delete the TwitterRoute camel integration from the cluster:
 ```
 $ kamel delete twitter-route
 ```
-### Step 4. Deploy Postgres polling integration 
+### Step 4. Deploy Postgres polling - Telegram integration in Public2 cluster 
 
 Create a secret in the cluster with database credentials:
 ```
- $ kubectl create secret generic tw-datasource --from-file=datasource.properties
+ $ kubectl create secret generic tw-datasource --from-file=src/main/resources/database/datasource.properties
 ```
 
 Run the camel integration
 ```
- kamel run SelectPostgres.java --dev --build-property quarkus.datasource.camel.db-kind=postgresql  --config secret:tw-datasource -d mvn:io.quarkus:quarkus-jdbc-postgresql -d mvn:org.apache.camel:camel-jackson
+ kamel run src/main/java/TelegramRoute.java --dev --build-property quarkus.datasource.camel.db-kind=postgresql  --config secret:tw-datasource -d mvn:io.quarkus:quarkus-jdbc-postgresql -d mvn:org.apache.camel:camel-jackson
 ```
 

@@ -1,6 +1,3 @@
-package dev.nluaces.twitter;
-
-
 import org.apache.camel.Processor;
 import org.apache.camel.builder.RouteBuilder;
 import org.apache.camel.component.twitter.search.TwitterSearchComponent;
@@ -9,11 +6,10 @@ import twitter4j.Status;
 
 
 public class TwitterRoute extends RouteBuilder {
-    private final String CONSUMER_KEY = "";
-    private final String CONSUMER_SECRET = "";
-    private final String ACCESS_TOKEN = "";
-    private final String ACCESS_TOKEN_SECRET = "";
-
+    private final String CONSUMER_KEY = "YourConsumerKey";
+    private final String CONSUMER_SECRET = "YourConsumerSecret";
+    private final String ACCESS_TOKEN = "YourAccessToken";
+    private final String ACCESS_TOKEN_SECRET = "YourAccessTokenSecret";
 
     private Processor routeProcessor = exchange -> {
         final Status status = (Status) exchange.getIn().getBody();
@@ -40,6 +36,5 @@ public class TwitterRoute extends RouteBuilder {
                 .to("kamelet:postgresql-sink");
 
     }
-
 
 }
