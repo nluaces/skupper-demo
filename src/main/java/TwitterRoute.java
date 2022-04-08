@@ -1,14 +1,12 @@
 import org.apache.camel.Processor;
 import org.apache.camel.builder.RouteBuilder;
 import org.apache.camel.component.twitter.search.TwitterSearchComponent;
+import org.apache.camel.spi.PropertiesComponent;
 import twitter4j.Status;
-
-
 
 public class TwitterRoute extends RouteBuilder {
 
-
-    private Processor routeProcessor = exchange -> {
+    private final Processor routeProcessor = exchange -> {
         final Status status = (Status) exchange.getIn().getBody();
         exchange.getIn().setBody(status.getText());
     };
@@ -17,10 +15,13 @@ public class TwitterRoute extends RouteBuilder {
     @Override
     public void configure() throws Exception {
 
-        String CONSUMER_KEY = getContext().getPropertiesComponent().resolveProperty("CONSUMER_KEY").get();
-        String CONSUMER_SECRET = getContext().getPropertiesComponent().resolveProperty("CONSUMER_SECRET").get();
-        String ACCESS_TOKEN = getContext().getPropertiesComponent().resolveProperty("ACCESS_TOKEN").get();
-        String ACCESS_TOKEN_SECRET = getContext().getPropertiesComponent().resolveProperty("ACCESS_TOKEN_SECRET").get();
+        PropertiesComponent pc = getContext().getPropertiesComponent();
+        getContext().getPropertiesComponent().setLocation("config.properties");
+
+        String CONSUMER_KEY = pc.resolveProperty("twitter.consumer-key").get();
+        String CONSUMER_SECRET = pc.resolveProperty("twitter.consumer-secret").get();
+        String ACCESS_TOKEN = pc.resolveProperty("twitter.access-token").get();
+        String ACCESS_TOKEN_SECRET = pc.resolveProperty("twitter.access-token-secret").get();
 
         // setup Twitter component
         TwitterSearchComponent tc = getContext().getComponent("twitter-search", TwitterSearchComponent.class);
@@ -33,9 +34,8 @@ public class TwitterRoute extends RouteBuilder {
         // poll twitter search for new tweets
         fromF("twitter-search://%s?delay=%s", "skupper", 5000)
                 .log("${body}")
-                .to("log:tweet")
                 .process(routeProcessor)
-                .to("kamelet:postgresql-sink");
+                .to("kamelet:twitter-postgresql-sink");
 
     }
 

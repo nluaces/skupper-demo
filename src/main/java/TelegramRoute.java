@@ -1,6 +1,7 @@
 import org.apache.camel.builder.RouteBuilder;
 import org.apache.camel.component.jackson.JacksonDataFormat;
 import org.apache.camel.model.dataformat.JsonLibrary;
+import org.apache.camel.spi.PropertiesComponent;
 
 public class TelegramRoute extends RouteBuilder {
 
@@ -8,14 +9,18 @@ public class TelegramRoute extends RouteBuilder {
 
     @Override
     public void configure() throws Exception {
-        final String AUTHORIZATION_TOKEN =  getContext().getPropertiesComponent().resolveProperty("AUTHORIZATION_TOKEN").get();
-        final String CHAT_ID = getContext().getPropertiesComponent().resolveProperty("CHAT_ID").get();
+
+        PropertiesComponent pc = getContext().getPropertiesComponent();
+        getContext().getPropertiesComponent().setLocation("config.properties");
+
+        final String AUTHORIZATION_TOKEN = pc.resolveProperty("telegram.authorization-token").get();
+        final String CHAT_ID = pc.resolveProperty("telegram.chat-id").get();
 
         from("timer://foo?period=3000")
                 .setBody(constant("SELECT sigthning FROM tw_feedback WHERE  created >= NOW() - INTERVAL '3 seconds'"))
                 .to("jdbc:camel")
                 .to("log:info")
-                .split(body())
+                .split(body()) //We could get several results, we need to show them one by one.
                 .choice().
                 when(body().isNotNull())
                 .marshal().json(JsonLibrary.Jackson)

@@ -1,0 +1,83 @@
+apiVersion: camel.apache.org/v1alpha1
+kind: Kamelet
+metadata:
+  name: twitter-postgresql-sink
+  labels:
+    camel.apache.org/kamelet.type: "sink"
+spec:
+  definition:
+    title: "Twitter Demo PostgreSQL Sink"
+    description: |-
+      Send data to a PostgreSQL Database.
+      This Kamelet expects a JSON as body. The mapping between the JSON fields and parameters is done by key, so if you have the following query:
+    required:
+      - serverName
+      - username
+      - password
+      - query
+      - databaseName
+    type: object
+    properties:
+      serverName:
+        title: Server Name
+        description: Server Name for the data source
+        type: string
+        example: localhost
+      serverPort:
+        title: Server Port
+        description: Server Port for the data source
+        type: string
+        default: 5432
+      username:
+        title: Username
+        description: The username to use for accessing a secured PostgreSQL Database
+        type: string
+        x-descriptors:
+          - urn:camel:group:credentials
+      password:
+        title: Password
+        description: The password to use for accessing a secured PostgreSQL Database
+        type: string
+        format: password
+        x-descriptors:
+          - urn:alm:descriptor:com.tectonic.ui:password
+          - urn:camel:group:credentials
+      query:
+        title: Query
+        description: The Query to execute against the PostgreSQL Database
+        type: string
+        example: 'INSERT INTO accounts (username,city) VALUES (:#username,:#city)'
+      databaseName:
+        title: Database Name
+        description: The Database Name we are pointing
+        type: string
+  types:
+    in:
+      mediaType: application/json
+  dependencies:
+    - "camel:jackson"
+    - "camel:kamelet"
+    - "camel:sql"
+    - "mvn:org.postgresql:postgresql:42.2.14"
+    - "mvn:org.apache.commons:commons-dbcp2:2.8.0"
+  flow:
+    beans:
+      - name: dsBean
+        type: "#class:org.apache.commons.dbcp2.BasicDataSource"
+        property:
+          - key: username
+            value: 'postgresadmin'
+          - key: password
+            value: 'admin123'
+          - key: url
+            value: 'jdbc:postgresql://postgres:5432/postgresdb'
+          - key: driverClassName
+            value: 'org.postgresql.Driver'
+    from:
+      uri: "kamelet:source"
+      steps:
+        - log: "${body}"
+        - to:
+            uri: "sql:INSERT INTO tw_feedback(sigthning) VALUES (:#${body})"
+            parameters:
+              dataSource: "#bean:{{dsBean}}"

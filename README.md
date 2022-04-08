@@ -9,6 +9,8 @@
 - A Telegram bot
 - A Telegram chat id
 
+Configure all the credentials in the `config.properties` file.
+
 ### Step 1. Set up skupper in the clusters
 `TBD`
 
@@ -47,36 +49,35 @@ Resume using `kubectl attach pg-shell -c pg-shell -i -t` command when the pod is
 
 Expose the database in skupper:
 ```
-skupper expose deployment postgres --address postgres --port 5432 -n private1
+skupper expose deployment postgres --port 5432 -n private1
 ``` 
 
 ### Step 3. Deploy TwitterRoute and Postgres Sink
 
 Install Camel integrations in the public1 cluster.
 ```
-    $ kamel install
     $ minikube addons enable registry
-    $ kubectl apply -f src/main/resources/postgres-sink.kamelet.yaml
-    $ kamel run src/main/java/TwitterRoute.java
-```
-To check the camel integration logs:
-```
-    $ kamel logs twitter-route
+    $ kamel install
+    $ src/main/resources/scripts/setUpPublic1Cluster.sh
 ```
 
-To delete the TwitterRoute camel integration from the cluster: 
-```
-$ kamel delete twitter-route
-```
+
 ### Step 4. Deploy Postgres polling - Telegram integration in Public2 cluster 
-
-Create a secret in the cluster with database credentials:
-```
- $ kubectl create secret generic tw-datasource --from-file=src/main/resources/database/datasource.properties
-```
 
 Run the camel integration
 ```
- kamel run src/main/java/TelegramRoute.java --dev --build-property quarkus.datasource.camel.db-kind=postgresql  --config secret:tw-datasource -d mvn:io.quarkus:quarkus-jdbc-postgresql -d mvn:org.apache.camel:camel-jackson
+    $ minikube addons enable registry
+    $ kamel install
+    $ src/main/resources/scripts/setUpPublic2Cluster.sh
 ```
 
+### Step 5. Tear down the environment after the demo
+
+In Private1 Cluster:
+`$ src/main/resources/scripts/tearDownPrivate1Cluster.sh`
+
+In Public1 Cluster:
+`$ src/main/resources/scripts/tearDownPublic1Cluster.sh`
+
+In Public2 Cluster:
+`$ src/main/resources/scripts/tearDownPublic2Cluster.sh`
